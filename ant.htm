@@ -1,0 +1,81 @@
+<html><meta charset="UTF-8"> <head>
+<script src="ant.js"></script>
+<script src="canvas.js"></script>
+<script type="application/javascript">
+	var running;
+	var gctx;	
+	var id;
+	var d;
+	var ants;
+	var trails;
+	var antIdIndex;
+	var dest;
+	function setGlobals(ictx){
+		gctx=ictx;
+		id=ictx.createImageData(1,1);
+		d=id.data;
+		ants=[newAnt(50,100,1),newAnt(50,100,1),newAnt(50,100,1),newAnt(50,100,1),newAnt(50,100,1),newAnt(50,100,1),newAnt(50,100,1)];
+		antIdIndex=0;
+		dest=setDest(540,200,50,50);
+		running=true;
+		trails = new Array(800);
+		for (var i = 0; i<trails.length; i++) {
+	    		trails[i]=new Array(400);
+  		}
+	}
+	function init(){
+		var canvasObj=document.getElementById("antpath");
+		if(1==1){
+			var ctx=canvasObj.getContext("2d");
+			setGlobals(ctx);
+			start();
+		}
+		
+	}
+	function start(){
+		var systime=0,ticks=0;
+		while(systime<4000&&running){
+			var t=setTimeout(function(){ticks++;step(ticks);},systime*20);
+			systime++;
+		}
+	}
+	function stop(){
+		running=false;
+	}
+	function step(systime){
+		for(var i=0;i<ants.length;i++){
+			//reward winning ants
+			if(checkDest(ants[i][1],ants[i][2],dest)){
+				setReturnPheromone(ants[i]);
+				ants.splice(i, 1);
+				ants.push(newAnt(50+rs(),100+rs(),1));
+				ants.push(newAnt(70+rs(),100+rs(),1));
+			}else{
+				//take the next step
+				var nextXY=getTrail(ants[i][1],ants[i][2]);
+				if(nextXY!=-1){
+					walk(nextXY[0],nextXY[1],ants[i]);
+				}else{
+				//cant find ideal next step
+					randomWalk(ants[i]); //give ant next x,y
+				}
+				markPos(systime,ants[i]);
+				drawPixel(Math.round(ants[i][1]+(Math.random()*2)),
+					  Math.round(ants[i][2]+(Math.random()*2)),
+					  ants[i][5]);
+			}
+		}
+	}
+	function rs(){
+		return Math.floor(Math.random()*31)-15;
+	}
+
+</script></head><body onload="init()">
+
+	<canvas id="antpath" width="800" height="400"></canvas>
+	<br><br>
+	<div id="debug"></div>
+	<button onClick="stop()">stop</button>
+
+
+</body></html>
